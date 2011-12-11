@@ -1,4 +1,4 @@
-package com.pg.androVote;
+package com.pg.androVote.WCFConnector;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,12 +20,13 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
 
+
 /** from http://lukencode.com/2010/04/27/calling-web-services-in-android-using-httpclient/ 
  * Need total reworking + support for SOAP 
  * For now: just stable API
  */
 
-public class WebServiceConnector {
+public class WCFConnector {
 
 	/** Public API */
 	public enum RequestMethod
@@ -38,7 +39,7 @@ public class WebServiceConnector {
 	 * 
 	 * @param url voting server address
 	 */
-	public WebServiceConnector(String url)
+	public WCFConnector(String url)
 	{
 		this.url = url;
 		params = new ArrayList<NameValuePair>();
@@ -50,27 +51,28 @@ public class WebServiceConnector {
 	 * @param login		user's login
 	 * @param password	user's password
 	 */
-	public void Login(String login, String password)
+	public void Login(String login, String password) throws IOException, BadLoginException
 	{
-		String ret;
-		try {
-        	this.Execute(WebServiceConnector.RequestMethod.GET);
-        } catch (Exception e) {
-        	e.printStackTrace();
-        }
-		
-		ret = this.getResponse();
-		
-		this.AddParam("name", "Lukas");
-        try {
-        	this.Execute(WebServiceConnector.RequestMethod.POST);
-        } catch (Exception e) {
-        	e.printStackTrace();
-        }
-        
-        ret = ret + " " + this.getResponse();
-        vi = new VoteInfo();
-        vi.setDescription(ret);
+		// need total rework
+//		String ret;
+//		try {
+//        	this.Execute(WebServiceConnector.RequestMethod.GET);
+//        } catch (Exception e) {
+//        	e.printStackTrace();
+//        }
+//		
+//		ret = this.getResponse();
+//		
+//		this.AddParam("name", "Lukas");
+//        try {
+//        	this.Execute(WebServiceConnector.RequestMethod.POST);
+//        } catch (Exception e) {
+//        	e.printStackTrace();
+//        }
+//        
+//        ret = ret + " " + this.getResponse();
+//        vi = new VoteInfo();
+//        vi.setDescription(ret);
 	}
 	
 	/** Terminates session and removes all auth tokens (if present) */

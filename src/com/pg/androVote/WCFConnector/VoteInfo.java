@@ -1,4 +1,4 @@
-package com.pg.androVote;
+package com.pg.androVote.WCFConnector;
 
 public class VoteInfo {
 	public String getTitle() {

@@ -15,5 +15,13 @@
         android:layout_height="wrap_content"
         android:layout_weight="0.12"
         android:text="TextView" />
+        
+    <Button
+        android:id="@+id/button1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ustawienia"
+        android:onClick="Ustawienia_click" />
+        
 
 </LinearLayout>

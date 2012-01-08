@@ -1,7 +1,9 @@
 package com.pg.androVote;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 
 public class AndroVoteActivity extends Activity {
@@ -20,5 +22,11 @@ public class AndroVoteActivity extends Activity {
     @Override
     public void onStop() {
     	super.onStop();
+    }
+    
+    public void Ustawienia_click(View view)
+    {
+    	Intent i = new Intent(this, com.pg.androVote.SettingsActivity.class);
+    	startActivity(i);
     }
 }

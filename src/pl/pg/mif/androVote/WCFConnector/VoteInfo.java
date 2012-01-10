@@ -59,7 +59,16 @@ public class VoteInfo {
 		this.answers = answers;
 	}
 	
+	public int getUserId() {
+		return userId;
+	}
+
+	public void setUserId(int userId) {
+		this.userId = userId;
+	}
+
 	private int id;
+	private int userId;
 	private String name;
 	private String beginDate;
 	private String endDate;

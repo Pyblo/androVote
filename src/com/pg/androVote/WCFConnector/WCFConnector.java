@@ -1,5 +1,9 @@
 package com.pg.androVote.WCFConnector;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,7 +26,6 @@ import org.apache.http.protocol.HTTP;
 
 
 /** from http://lukencode.com/2010/04/27/calling-web-services-in-android-using-httpclient/ 
- * Need total reworking + support for SOAP 
  * For now: just stable API
  */
 
@@ -51,33 +54,31 @@ public class WCFConnector {
 	 * @param login		user's login
 	 * @param password	user's password
 	 */
-	public void Login(String login, String password) throws IOException, BadLoginException
+	public String Login(String login, String password) throws IOException, BadLoginException
 	{
 		// need total rework
-//		String ret;
-//		try {
-//        	this.Execute(WebServiceConnector.RequestMethod.GET);
-//        } catch (Exception e) {
-//        	e.printStackTrace();
-//        }
-//		
-//		ret = this.getResponse();
-//		
-//		this.AddParam("name", "Lukas");
-//        try {
-//        	this.Execute(WebServiceConnector.RequestMethod.POST);
-//        } catch (Exception e) {
-//        	e.printStackTrace();
-//        }
-//        
-//        ret = ret + " " + this.getResponse();
-//        vi = new VoteInfo();
-//        vi.setDescription(ret);
+		String ret;
+		this.AddParam("login", login);
+		this.AddParam("password", password);
+		try {
+        	this.Execute(WCFConnector.RequestMethod.GET, "LoginUser");
+        } catch (Exception e) {
+        	e.printStackTrace();
+        }
+
+		ret = this.getResponse();
+        try {
+			JSONObject js = new JSONObject(this.SanitizeMessage(ret));
+		} catch (JSONException e) {
+			e.printStackTrace();	
+		}
+        return ret;
 	}
 	
 	/** Terminates session and removes all auth tokens (if present) */
 	public void Logout()
 	{
+		// empty stub, because there's not such method in WCF api (10.01.2012)
 	}
 	
 	/** Vote action
@@ -95,10 +96,17 @@ public class WCFConnector {
 		return vi;
 	}
 
-	// end of API
+	// end of public API
 	
 	private VoteInfo vi = null;
 	
+	private String SanitizeMessage(String message)
+	{
+		return message;
+		
+	}
+	
+	// DON'T TOUCH!!! ///////////////////////////////////////////////////////
 	private ArrayList <NameValuePair> params;
 	private ArrayList <NameValuePair> headers;
 
@@ -130,8 +138,8 @@ public class WCFConnector {
 	{
 		headers.add(new BasicNameValuePair(name, value));
 	}
-
-	private void Execute(RequestMethod method) throws Exception
+	
+	private void Execute(RequestMethod method, String function) throws Exception
 	{
 		switch(method) {
 		case GET:
@@ -142,7 +150,7 @@ public class WCFConnector {
 				combinedParams += "?";
 				for(NameValuePair p : params)
 				{
-					String paramString = p.getName() + "=" + URLEncoder.encode(p.getValue(),"UTF-8");
+					String paramString = p.getName() + "='" + URLEncoder.encode(p.getValue() + "'","UTF-8");
 					if(combinedParams.length() > 1)
 					{
 						combinedParams  +=  "&" + paramString;
@@ -154,7 +162,7 @@ public class WCFConnector {
 				}
 			}
 
-			HttpGet request = new HttpGet(url + combinedParams);
+			HttpGet request = new HttpGet(url + function + combinedParams);
 
 			//add headers
 			for(NameValuePair h : headers)

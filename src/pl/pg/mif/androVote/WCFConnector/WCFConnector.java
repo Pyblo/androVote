@@ -1,4 +1,4 @@
-package com.pg.androVote.WCFConnector;
+package pl.pg.mif.androVote.WCFConnector;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,22 +25,14 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
 
 
-/** from http://lukencode.com/2010/04/27/calling-web-services-in-android-using-httpclient/ 
- * For now: just stable API
- */
-
 public class WCFConnector {
 
 	/** Public API */
-	public enum RequestMethod
-	{
-		GET,
-		POST
-	}
+
 	
 	/** Creates WebServiceConnector instance
 	 * 
-	 * @param url voting server address
+	 * @param url Address of configured voting server.
 	 */
 	public WCFConnector(String url)
 	{
@@ -53,10 +45,10 @@ public class WCFConnector {
 	 * 
 	 * @param login		user's login
 	 * @param password	user's password
+	 * @throws BadLoginException 
 	 */
 	public String Login(String login, String password) throws IOException, BadLoginException
 	{
-		// need total rework
 		String ret;
 		this.AddParam("login", login);
 		this.AddParam("password", password);
@@ -65,14 +57,27 @@ public class WCFConnector {
         } catch (Exception e) {
         	e.printStackTrace();
         }
-
 		ret = this.getResponse();
+		
+		// I'm parsing result
+		// first I need strip xml tags
+		// next I'm getting JSON object and test wheter was error,
+		// if yes: throw exception
+		// if not: return string with user id
+		String return_string = "";
+		JSONObject js;
         try {
-			JSONObject js = new JSONObject(this.SanitizeMessage(ret));
+			js = new JSONObject(this.SanitizeMessage(ret));
+			if (js.getBoolean("isError") == true)
+			{
+				throw new BadLoginException();
+			}
+			return_string= js.getString("id");
 		} catch (JSONException e) {
 			e.printStackTrace();	
 		}
-        return ret;
+        
+        return return_string;
 	}
 	
 	/** Terminates session and removes all auth tokens (if present) */
@@ -90,23 +95,87 @@ public class WCFConnector {
 	{
 	}
 	
-	/** Returns current election info */
+	/** 
+	 * Returns current election info 
+	 * 
+	 * @return Method returns null if there's no 
+	 * active voting or VoteInfo if there's started voting.
+	 */
 	public VoteInfo GetCurrentVoteInfo()
 	{
-		return vi;
+		// accessing method GetActiveVotingId
+		String ret;
+		try {
+        	this.Execute(WCFConnector.RequestMethod.GET, "GetActiveVotingId");
+        } catch (Exception e) {
+        	e.printStackTrace();
+        }
+		ret = this.getResponse();
+		
+		// parsing answer
+		JSONObject js;
+		int votingId = -2;
+        try {
+			js = new JSONObject(this.SanitizeMessage(ret));
+			votingId = js.getInt("id");
+		} catch (JSONException e) {
+			e.printStackTrace();	
+		}
+        
+        if (votingId < 0){
+        	// there's no current voting
+        	return null;
+        } else {
+        	this.AddParam("id", Integer.toString(votingId));
+        	try {
+            	this.Execute(WCFConnector.RequestMethod.GET, "GetVotingById");
+            } catch (Exception e) {
+            	e.printStackTrace();
+            }
+    		ret = this.getResponse();
+    		
+    		// here we should have JSON object with info about current voting
+    		// (surrounded by ugly xml tags)
+    		VoteInfo vi = new VoteInfo();
+    		try{
+    			js = new JSONObject(this.SanitizeMessage(ret));
+    		} catch (JSONException e) {
+    			e.printStackTrace();	
+    		}
+        	return vi;
+        }
+		
 	}
 
 	// end of public API
 	
 	private VoteInfo vi = null;
 	
+	/**
+	 * Rippoff xml tags from message and returns pure JSON object.
+	 * @param Message information returned by WCF.
+	 * @return
+	 */
 	private String SanitizeMessage(String message)
 	{
-		return message;
-		
+		int start_pos = message.indexOf('{');
+		int stop_pos  = message.lastIndexOf('}');
+		return message.substring(start_pos, stop_pos + 1);
 	}
 	
 	// DON'T TOUCH!!! ///////////////////////////////////////////////////////
+	
+	/* 
+	 * from http://lukencode.com/2010/04/27/calling-web-services-in-android-using-httpclient/ 
+	 * For now: just stable API
+	 */
+	
+	private enum RequestMethod
+	{
+		GET,
+		POST
+	}
+	
 	private ArrayList <NameValuePair> params;
 	private ArrayList <NameValuePair> headers;
 
@@ -121,13 +190,13 @@ public class WCFConnector {
 		return response;
 	}
 
-	private String getErrorMessage() {
-		return message;
-	}
-
-	private int getResponseCode() {
-		return responseCode;
-	}
+//	private String getErrorMessage() {
+//		return message;
+//	}
+//
+//	private int getResponseCode() {
+//		return responseCode;
+//	}
 
 	private void AddParam(String name, String value)
 	{
@@ -224,6 +293,7 @@ public class WCFConnector {
 		}
 	}
 
+	// reads stream from socket and writes it to the resulting string
 	private static String convertStreamToString(InputStream is) {
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(is));

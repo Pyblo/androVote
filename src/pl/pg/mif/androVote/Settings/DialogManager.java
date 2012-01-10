@@ -1,4 +1,4 @@
-package com.pg.androVote.settings;
+package pl.pg.mif.androVote.Settings;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -10,7 +10,7 @@ public class DialogManager
 	public static Dialog createIOError(Context context)
 	{
 		AlertDialog.Builder builder = new AlertDialog.Builder(context);
-		builder.setMessage("B³¹d podczas próby dostêpu do zasobów konfiguracyjnych.")
+		builder.setMessage("Bï¿½ï¿½d podczas prï¿½by dostï¿½pu do zasobï¿½w konfiguracyjnych.")
 		.setNeutralButton("OK", new DialogInterface.OnClickListener() {
 	           public void onClick(DialogInterface dialog, int id) {
 	                dialog.dismiss();
@@ -21,7 +21,7 @@ public class DialogManager
 	public static Dialog createInvalidPortNumber(Context context)
 	{
 		AlertDialog.Builder builder = new AlertDialog.Builder(context);
-		builder.setMessage("Port serwera nie mo¿e przekraczaæ 65535.")
+		builder.setMessage("Port serwera nie moï¿½e przekraczaï¿½ 65535.")
 		.setNeutralButton("OK", new DialogInterface.OnClickListener() {
 	           public void onClick(DialogInterface dialog, int id) {
 	                dialog.dismiss();

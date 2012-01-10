@@ -1,0 +1,29 @@
+commit 4ad9c218ab9bb8c3a8f747d1e714ebb071af0788
+Author: Lukas Redynk <mr.erdk@gmail.com>
+Date:   Sun Dec 18 17:04:38 2011 +0100
+
+    Wyczyściłem główne activity z niepotrzebynch rzeczy i dorzuciłem pliczek .gitignore, w którym wykluczam folder bin/ z dodawania do repo. Lepiej, jak każdy sam sobie buduje projekt.
+
+commit 0b40ad61c447a2635f3bc8d3ff60cc5bce97df35
+Author: Lukas Redynk <mr.erdk@gmail.com>
+Date:   Sun Dec 11 15:14:25 2011 +0100
+
+    Cleanups + some progres on WCF API
+
+commit 378301269c45bb149b75e8ad82371478452b9736
+Author: Lukas Redynk <mr.erdk@gmail.com>
+Date:   Tue Dec 6 08:21:28 2011 +0100
+
+    Dodałem wstępne API do komunikacji z WebServisem + przykład, jak można z niego skorzystać.
+
+commit e8e79daec4ef246406997016eb55819a448dac79
+Author: Lukas Redynk <mr.erdk@gmail.com>
+Date:   Tue Nov 29 14:00:10 2011 +0100
+
+    Dodałem brakujący plik README
+
+commit eb7eb3e8ee460b30076ad12bdfc92d7e8d2f1e5c
+Author: Lukas Redynk <mr.erdk@gmail.com>
+Date:   Tue Nov 29 13:59:47 2011 +0100
+
+    Init of repo

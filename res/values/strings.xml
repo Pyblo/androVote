@@ -3,5 +3,6 @@
 
     <string name="hello">Hello World, AndroVoteActivity!</string>
     <string name="app_name">AndroVote</string>
+    <string name="CloseText">Zamknij</string>
 
 </resources>

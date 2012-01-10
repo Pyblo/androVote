@@ -1,0 +1,35 @@
+﻿androVote
+
+Tydzień
+13-20.XII.2011
+
+git log:
+
+commit 4ad9c218ab9bb8c3a8f747d1e714ebb071af0788
+Author: Lukas Redynk <mr.erdk@gmail.com>
+Date:   Sun Dec 18 17:04:38 2011 +0100
+
+    Wyczyściłem główne activity z niepotrzebynch rzeczy i dorzuciłem pliczek 
+	.gitignore, w którym wykluczam folder bin/ z dodawania do repo. Lepiej,
+	jak każdy sam sobie buduje projekt.
+
+1. Łukasz Redynk
+Wyczyściłem główną formę i uzupełniłem dokumentację o projekcie.
+
+2. Joanna Matyjas
+"
+1. Przypomnienie eclipse, zapoznanie się z emulatorem androida
+2. Research w necie o androidzie, strukturze aplikacji itp.
+3. Krótkie przypomnienie Javy, "hello world" i kilka innych prostych
+próbnych programików na androida
+4. Ekran logowania - gotowy w 50%
+"
+
+3. Paweł Skorupka
+Ogólne rozeznanie w technologii.
+
+4. Mateusz Kortas
+Prace koncepcyjne.
+
+5. Rafał Dawidczyk
+Prace techniczne nad ustawieniem dewelopersiego serwera.

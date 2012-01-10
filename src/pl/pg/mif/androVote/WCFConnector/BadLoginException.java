@@ -1,4 +1,4 @@
-package com.pg.androVote.WCFConnector;
+package pl.pg.mif.androVote.WCFConnector;
 
 public class BadLoginException extends Exception {
 
@@ -6,6 +6,6 @@ public class BadLoginException extends Exception {
 	public String message;
 	
 	public BadLoginException() {
-		message = "Z≥y login lub has≥o.";
+		message = "Z≈Çy login lub has≈Ço!";
 	}
 }

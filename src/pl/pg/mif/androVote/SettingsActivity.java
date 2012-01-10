@@ -1,9 +1,9 @@
-package com.pg.androVote;
+package pl.pg.mif.androVote;
 
 import java.io.IOException;
-import com.pg.androVote.R;
-import com.pg.androVote.settings.DialogManager;
-import com.pg.androVote.settings.SettingsProvider;
+
+import pl.pg.mif.androVote.Settings.DialogManager;
+import pl.pg.mif.androVote.Settings.SettingsProvider;
 import android.app.Activity;
 import android.app.Dialog;
 import android.os.Bundle;

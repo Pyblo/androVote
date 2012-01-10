@@ -1,13 +1,6 @@
-package com.pg.androVote.Dialogs;
+package pl.pg.mif.androVote.Dialogs;
 
-import com.example.helloandroid.R;
-import com.example.helloandroid.R.drawable;
-import com.example.helloandroid.R.id;
-import com.example.helloandroid.R.layout;
-
-import android.R.bool;
 import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -17,6 +10,8 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import pl.pg.mif.androVote.R;
 
 public class VoteDialog {
 	Context context;
@@ -43,7 +38,6 @@ public class VoteDialog {
 			
 			closeButton.setOnClickListener(new OnClickListener() {
 				
-				@Override
 				public void onClick(View v) {
 					dialog.dismiss();
 					// TODO Auto-generated method stub
@@ -62,7 +56,6 @@ public class VoteDialog {
 			
 			closeButton.setOnClickListener(new OnClickListener() {
 				
-				@Override
 				public void onClick(View v) {
 					dialog.dismiss();
 					// TODO Auto-generated method stub

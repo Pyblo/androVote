@@ -1,4 +1,4 @@
-package com.pg.androVote.settings;
+package pl.pg.mif.androVote.Settings;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;

@@ -202,13 +202,13 @@ public class WCFConnector implements Serializable {
 	 *            Number representing selected option.
 	 * @throws ServerConnectionException 
 	 */
-	public void Vote(int myVoteId) throws ServerConnectionException {
+	public void Vote(String myVoteId) throws ServerConnectionException {
 		// TODO: create voting function
 //		String ret;
 		
 		AddParam("votingId", Integer.toString(activeVotingId));
 		AddParam("userID", Integer.toString(ui.getId()));
-		AddParam("answerId", Integer.toString(myVoteId));
+		AddParam("answerId", myVoteId);
 		
 		try{
 			Execute("Vote");
@@ -280,9 +280,9 @@ public class WCFConnector implements Serializable {
 	 * @throws IOException
 	 * @throws ServerConnectionException 
 	 */
-	public ArrayList<Integer> GetCurrentVotingList() throws ServerConnectionException
+	public int[] GetCurrentVotingList() throws ServerConnectionException
 	{
-		ArrayList<Integer> currentVotingList = new ArrayList<Integer>();
+		int[] currentVotingList = null;
 		
 		try{
 			Execute("GetVotingList");
@@ -294,9 +294,10 @@ public class WCFConnector implements Serializable {
 		try{
 			JSONObject js = new JSONObject(ret);
 			JSONArray ja = js.getJSONArray("votings");
+			currentVotingList = new int[ja.length()];
 			for (int i = 0; i < ja.length(); i++)
 			{
-				currentVotingList.add(new Integer(ja.getInt(i)));
+				currentVotingList[i] = ja.getInt(i);
 			}
 		} catch (JSONException e) {
 			

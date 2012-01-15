@@ -1,5 +1,7 @@
 package pl.pg.mif.androVote.WCFConnector;
 
+import java.util.HashMap;
+
 /**
  * Class VoteInfo storing all the information needed by user about voting.
  * @author Erdk
@@ -52,10 +54,10 @@ public class VoteInfo {
 	public void setQuestion(String question) {
 		this.question = question;
 	}
-	public String[] getAnswers() {
+	public HashMap<String, String> getAnswers() {
 		return answers;
 	}
-	public void setAnswers(String[] answers) {
+	public void setAnswers(HashMap<String, String> answers) {
 		this.answers = answers;
 	}
 	
@@ -74,5 +76,6 @@ public class VoteInfo {
 	private String endDate;
 	private char type;
 	private String question;
-	private String[] answers;
+	//private String[] answers;
+	private HashMap<String, String> answers;
 }

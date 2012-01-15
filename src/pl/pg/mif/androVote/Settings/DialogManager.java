@@ -10,7 +10,7 @@ public class DialogManager
 	public static Dialog createIOError(Context context)
 	{
 		AlertDialog.Builder builder = new AlertDialog.Builder(context);
-		builder.setMessage("B��d podczas pr�by dost�pu do zasob�w konfiguracyjnych.")
+		builder.setMessage("Błąd podczas próby dostępu do zasobów konfiguracyjnych.")
 		.setNeutralButton("OK", new DialogInterface.OnClickListener() {
 	           public void onClick(DialogInterface dialog, int id) {
 	                dialog.dismiss();
@@ -21,7 +21,7 @@ public class DialogManager
 	public static Dialog createInvalidPortNumber(Context context)
 	{
 		AlertDialog.Builder builder = new AlertDialog.Builder(context);
-		builder.setMessage("Port serwera nie mo�e przekracza� 65535.")
+		builder.setMessage("Port serwera nie może przekraczać 65535.")
 		.setNeutralButton("OK", new DialogInterface.OnClickListener() {
 	           public void onClick(DialogInterface dialog, int id) {
 	                dialog.dismiss();

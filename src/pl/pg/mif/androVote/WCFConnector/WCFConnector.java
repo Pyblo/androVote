@@ -1,5 +1,6 @@
 package pl.pg.mif.androVote.WCFConnector;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -10,21 +11,23 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
+//import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
+//import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
-import org.apache.http.protocol.HTTP;
+//import org.apache.http.protocol.HTTP;
 
 import android.content.Context;
 
@@ -35,18 +38,22 @@ import pl.pg.mif.androVote.Settings.*;
 
 public class WCFConnector implements Serializable {
 
-	/** Public API */
-
+	// internals
 	private static final long serialVersionUID = -6624133023737987576L;
+	static private String server_postfix = "/RW_GLOSOWANIE_WcfDataService.svc/"; 
 	private UserInfo ui;
 	private String serverIP;
 	private String serverPort;
 	private String url;
-	static private String server_postfix = "/RW_GLOSOWANIE_WcfDataService.svc/"; 
+	private int activeVotingId;
+	
+	
+	/** Public API */
 	
 	/**
 	 * Creates WebServiceConnector instance
-	 * @param context 
+	 * 
+	 * @param context Context of running activity, for SettingsProvider service. 
 	 * 
 	 * @param url
 	 *            Address of configured voting server.
@@ -57,20 +64,21 @@ public class WCFConnector implements Serializable {
 		try {
 			sp = new SettingsProvider(context);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			throw new IOSettingsException();
 		}
-		serverIP = sp.getServerAddress(); // TODO: get from secret storage
+		serverIP = sp.getServerAddress();
 		if (!serverIP.startsWith("http://"))
 		{
 			serverIP = "http://" + serverIP;
 		}
-		serverPort = Integer.toString(sp.getServerPort()); // TODO: get from secret storage
-		this.url = serverIP + ":" + serverPort + server_postfix;
+		serverPort = Integer.toString(sp.getServerPort());
+		url = serverIP + ":" + serverPort + server_postfix;
 		params = new ArrayList<NameValuePair>();
 		headers = new ArrayList<NameValuePair>();
 	}
 
+	// user related functions
+	
 	/**
 	 * Authenticates into server
 	 * 
@@ -88,14 +96,14 @@ public class WCFConnector implements Serializable {
 	 */
 	public void Login(String login, String password) throws BadLoginException, ServerConnectionException {
 		String ret;
-		this.AddParam("login", login);
-		this.AddParam("password", password);
+		AddParam("login", login);
+		AddParam("password", password);
 		try {
-			this.Execute(WCFConnector.RequestMethod.GET, "LoginUser");
+			Execute(/*WCFConnector.RequestMethod.GET,*/ "LoginUser");
 		} catch (IOException e) {
 			throw new ServerConnectionException();
 		}
-		ret = this.getResponse();
+		ret = SanitizeMessage(getResponse());
 
 		// I'm parsing result
 		// first I need strip xml tags
@@ -103,9 +111,8 @@ public class WCFConnector implements Serializable {
 		// if yes: throw exception
 		// if not: return string with user id
 		String userid_string = "";
-		JSONObject js;
 		try {
-			js = new JSONObject(this.SanitizeMessage(ret));
+			JSONObject js = new JSONObject(ret);
 			if (js.getBoolean("isError") == true) {
 				throw new BadLoginException();
 			}
@@ -116,17 +123,17 @@ public class WCFConnector implements Serializable {
 		
 		// connecting server
 		ui = new UserInfo();
-		this.AddParam("id", userid_string);
+		AddParam("id", userid_string);
 		try{
-			this.Execute(WCFConnector.RequestMethod.GET, "GetUserById");
+			Execute(/*WCFConnector.RequestMethod.GET, */"GetUserById");
 		} catch (IOException e) {
 			throw new ServerConnectionException();
 		}
-		ret = this.getResponse();
+		ret = SanitizeMessage(getResponse());
 		
 		// parsing server response
 		try{
-			js = new JSONObject(this.SanitizeMessage(ret));
+			JSONObject js = new JSONObject(ret);
 			ui.setId(js.getInt("id"));
 			ui.setUserFirstAndLastName(js.getString("firstName") + " " + js.getString("lastName"));
 			ui.setUsername(login);
@@ -138,10 +145,20 @@ public class WCFConnector implements Serializable {
 			ui.setLogged(false);
 		}
 	}
+	
+	/** 
+	 * Terminates session and removes all auth tokens (if present) 
+	 *
+	 */
+	public void Logout() {
+		// empty stub, because there's not such method in WCF api (10.01.2012)
+		ui.setLogged(false);
+	}
 
 	/**
 	 * Method for accessing current user info.
-	 * @return
+	 * 
+	 * @return Object with user description.
 	 */
 	public UserInfo getUserInfo() {
 		return ui;
@@ -149,6 +166,7 @@ public class WCFConnector implements Serializable {
 	
 	/**
 	 * Return state of user loging.
+	 * 
 	 * @return true if user is logged in
 	 * 		   false if not
 	 */
@@ -162,6 +180,7 @@ public class WCFConnector implements Serializable {
 	
 	/**
 	 * Returns status of user permissions.
+	 * 
 	 * @return true, if user is admin
 	 * 		   false, if not
 	 */
@@ -173,23 +192,29 @@ public class WCFConnector implements Serializable {
 			return false;
 	}
 
-	/** 
-	 * Terminates session and removes all auth tokens (if present) 
-	 *
-	 */
-	public void Logout() {
-		// empty stub, because there's not such method in WCF api (10.01.2012)
-	}
-
+	// Voting related functions
+	
 	/**
 	 * Vote action Sends vote to server as authenticated user: warning - there
 	 * must be active election.
 	 * 
-	 * @param voteId
-	 *            number representing selected option
+	 * @param myVoteId
+	 *            Number representing selected option.
+	 * @throws ServerConnectionException 
 	 */
-	public void Vote(int votingId, int myVoteId) {
-		// TODO: 
+	public void Vote(int myVoteId) throws ServerConnectionException {
+		// TODO: create voting function
+//		String ret;
+		
+		AddParam("votingId", Integer.toString(activeVotingId));
+		AddParam("userID", Integer.toString(ui.getId()));
+		AddParam("answerId", Integer.toString(myVoteId));
+		
+		try{
+			Execute("Vote");
+		} catch (IOException e) {
+			throw new ServerConnectionException();
+		}
 	}
 
 	/**
@@ -197,53 +222,164 @@ public class WCFConnector implements Serializable {
 	 * 
 	 * @return Method returns null if there's no active voting or VoteInfo if
 	 *         there's started voting.
+	 * @throws ServerConnectionException 
 	 */
-	public VoteInfo GetCurrentVoteInfo() {
-		// accessing method GetActiveVotingId
+	public VoteInfo GetCurrentVoteInfo() throws ServerConnectionException {
 		String ret;
-		try {
-			this.Execute(WCFConnector.RequestMethod.GET, "GetActiveVotingId");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		ret = this.getResponse();
 
-		// parsing answer
-		JSONObject js;
-		int votingId = -2;
-		try {
-			js = new JSONObject(this.SanitizeMessage(ret));
-			votingId = js.getInt("id");
-		} catch (JSONException e) {
-			e.printStackTrace();
+		// accessing method GetActiveVotingId
+		int votingId;
+		try{
+			votingId = GetActiveVotingId();
+		} catch (ServerConnectionException e) {
+			throw e;
 		}
-
+		
 		if (votingId < 0) {
 			// there's no current voting
 			return null;
 		} else {
-			this.AddParam("id", Integer.toString(votingId));
+			AddParam("id", Integer.toString(votingId));
 			try {
-				this.Execute(WCFConnector.RequestMethod.GET, "GetVotingById");
+				Execute(/*WCFConnector.RequestMethod.GET, */"GetVotingById");
 			} catch (Exception e) {
-				e.printStackTrace();
+				throw new ServerConnectionException();
 			}
-			ret = this.getResponse();
+			ret = SanitizeMessage(getResponse());
 
 			// here we should have JSON object with info about current voting
 			// (surrounded by ugly xml tags)
-			// TODO: end implementing voting info
+			// TODO: check for errors
 			VoteInfo vi = new VoteInfo();
 			try {
-				js = new JSONObject(this.SanitizeMessage(ret));
+				JSONObject js = new JSONObject(ret);
+				vi.setName(js.getString("name"));
+				vi.setQuestion(js.getString("question"));
+				JSONObject ans = js.getJSONObject("answers");
+				HashMap<String, String> answerOptions = new HashMap<String, String>();
+				for(Iterator<String> i = ans.keys(); i.hasNext(); )
+				{
+					String key = (String) i.next();
+					String value = ans.getString(key);
+					answerOptions.put(key, value);
+				}
+				vi.setAnswers(answerOptions);
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
+			
+			activeVotingId = votingId;
 			return vi;
 		}
-
 	}
+	
+	/**
+	 * Returns current votings for session.
+	 * 
+	 * @return
+	 * @throws IOException
+	 * @throws ServerConnectionException 
+	 */
+	public ArrayList<Integer> GetCurrentVotingList() throws ServerConnectionException
+	{
+		ArrayList<Integer> currentVotingList = new ArrayList<Integer>();
+		
+		try{
+			Execute("GetVotingList");
+		} catch (IOException e) {
+			throw new ServerConnectionException();
+		}
+		
+		String ret = SanitizeMessage(getResponse());
+		try{
+			JSONObject js = new JSONObject(ret);
+			JSONArray ja = js.getJSONArray("votings");
+			for (int i = 0; i < ja.length(); i++)
+			{
+				currentVotingList.add(new Integer(ja.getInt(i)));
+			}
+		} catch (JSONException e) {
+			
+		}
+		
+		return currentVotingList;
+	}
+	
+	/**
+	 * Starts voting with requested id.
+	 * 
+	 * @param voteId
+	 * @throws IOException 
+	 * @throws ServerConnectionException 
+	 */
+	public void StartVoting(int votingId) throws ServerConnectionException
+	{
+		try{
+			AddParam("votingId", Integer.toString(votingId));
+			Execute(/*RequestMethod.GET, */"StopVoting");
+		} catch (IOException e) {
+			throw new ServerConnectionException();
+		}
+		
+		String ret = SanitizeMessage(getResponse());
+		try{
+			// TODO: check response for errors
+			JSONObject js = new JSONObject(ret);
+		} catch(JSONException e) {
+			
+		}
+	}
+	
+	/**
+	 * Finishes active voting.
+	 * 
+	 * @throws IOException 
+	 * @throws ServerConnectionException 
+	 *
+	 */
+	public void StopVoting() throws ServerConnectionException
+	{
+		int votingId = GetActiveVotingId();
+		if (votingId >= 0)
+		{
+			AddParam("votingId", Integer.toString(votingId));
+			try{
+				Execute(/*RequestMethod.GET, */"StartVoting");
+			} catch (IOException e) {
+				throw new ServerConnectionException();
+			}
+		}
+		
+		String ret = SanitizeMessage(getResponse());
+		try{
+			// TODO: check response for errors
+			JSONObject js = new JSONObject(ret);
+		} catch(JSONException e) {
+			
+		}
+	}
+	
+	private int GetActiveVotingId() throws ServerConnectionException
+	{
+		try {
+			Execute(/*WCFConnector.RequestMethod.GET, */"GetActiveVotingId");
+		} catch (Exception e) {
+			throw new ServerConnectionException();
+		}
+		String ret = SanitizeMessage(getResponse());
 
+		// parsing answer
+		int votingId = -2;
+		try {
+			JSONObject js = new JSONObject(ret);
+			votingId = js.getInt("id");
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		
+		return votingId;
+	}
+	
 	// end of public API
 
 	/**
@@ -267,9 +403,9 @@ public class WCFConnector implements Serializable {
 	 * -httpclient/ For now: just stable API
 	 */
 
-	private enum RequestMethod {
-		GET, POST
-	}
+//	private enum RequestMethod {
+//		GET, POST
+//	}
 
 	private ArrayList<NameValuePair> params;
 	private ArrayList<NameValuePair> headers;
@@ -302,17 +438,20 @@ public class WCFConnector implements Serializable {
 //		headers.add(new BasicNameValuePair(name, value));
 //	}
 
-	private void Execute(RequestMethod method, String function) throws IOException
+	private void Execute(/*RequestMethod method, */String function) throws IOException
 	{
-		switch (method) {
-			case GET: {
-				// add parameters
+//		switch (method) {
+//			case GET: {
+//				// add parameters
 				String combinedParams = "";
 				if (!params.isEmpty()) {
 					combinedParams += "?";
 					for (NameValuePair p : params) {
 						String paramString;
-						if (p.getName().compareTo("id") == 0)
+						if (p.getName().compareTo("id")       == 0 || 
+							p.getName().compareTo("votingId") == 0 ||
+							p.getName().compareTo("userId")   == 0 ||
+							p.getName().compareTo("answerId") == 0)
 						{
 							paramString = p.getName() + "="
 									+ URLEncoder.encode(p.getValue(), "UTF-8");
@@ -343,25 +482,25 @@ public class WCFConnector implements Serializable {
 				} catch (IOException e) {
 					throw e;
 				}
-	
-				break;
-			}
-			case POST: {
-				HttpPost request = new HttpPost(url);
-	
-				// add headers
-				for (NameValuePair h : headers) {
-					request.addHeader(h.getName(), h.getValue());
-				}
-	
-				if (!params.isEmpty()) {
-					request.setEntity(new UrlEncodedFormEntity(params, HTTP.UTF_8));
-				}
-	
-				executeRequest(request, url);
-				break;
-			}
-		}
+//	
+//				break;
+//			}
+//			case POST: {
+//				HttpPost request = new HttpPost(url);
+//	
+//				// add headers
+//				for (NameValuePair h : headers) {
+//					request.addHeader(h.getName(), h.getValue());
+//				}
+//	
+//				if (!params.isEmpty()) {
+//					request.setEntity(new UrlEncodedFormEntity(params, HTTP.UTF_8));
+//				}
+//	
+//				executeRequest(request, url);
+//				break;
+//			}
+//		}
 	}
 
 	private void executeRequest(HttpUriRequest request, String url)

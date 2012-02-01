@@ -3,6 +3,11 @@
 
     <string name="hello">Hello World, AndroVoteActivity!</string>
     <string name="app_name">AndroVote</string>
+    <string name="ZALOGUJ">ZALOGUJ</string>
+    <string name="Login">Login</string>
+    <string name="Haslo">Haslo</string>
+    <string name="Ustawienia">Ustawienia</string>
+    <string name="OFF">Wyłącz</string>
     <string name="CloseText">Zamknij</string>
 
 </resources>
